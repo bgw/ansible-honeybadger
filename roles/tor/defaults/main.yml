@@ -1,0 +1,28 @@
+---
+# we leave services off by default. If we add new services, we don't want them
+# automatically installing on old configurations.
+tor: no
+
+tor_nickname: ansiblehoneybadger
+tor_contact_info: null # you may obfusicate this
+tor_address: null
+tor_or_port: 443
+tor_dir_port: 80
+# if tor_dir_port and www_port conflict, honeybadger will proxy traffic through
+# nginx, as per <http://bit.ly/1tAjOGT>
+tor_proxied_dir_port: 9030 # internal un-advertised port to proxy to nginx
+tor_bandwidth_rate: null # normally unmetered, you should probably change this
+tor_bandwidth_burst: null
+tor_exit_policy: # don't act as an exit relay by default
+  - reject *:*
+tor_num_cpus: 0 # try to guess
+tor_bridge: false
+tor_bridge_publish: true # should we publish to bridges.torproject.org
+tor_restart_interval: 90 days # restart every 90 days, just in case
+tor_extra: "# no extra options declared" # extra rules to append to torrc
+tor_procname: tor # change this if your provider kills tor (but check the AUP)
+
+# don't forget to also edit roles/www/defaults/main.yml
+www: yes
+www_hostname: "{{ inventory_hostname }}"
+www_port: 80

@@ -1,0 +1,82 @@
+---
+# it's not sane to check every possible service on every possible port, but it's
+# likely that tor is running on port 80 if www was previously disabled, since
+# that's our default port for it.
+- name: check if tor is already running on www port
+  shell: netstat -lnpt | grep ":{{www_port}}\s.\+\s$(cat /var/run/tor/tor.pid)/"
+  register: www_tor_conflict
+  failed_when: false
+  changed_when: false
+  when: www
+  tags: [www, tor]
+
+# it's okay for us to kill tor, because tor should be the next role to run
+- name: stopping existing tor service to free www port
+  service: name=tor state=stopped
+  notify: ensure tor is running
+  when: www and www_tor_conflict.rc == 0
+  tags: [www, tor]
+
+- name: install or remove nginx
+  apt: >
+    name=nginx-full
+    state={{ "present" if www else "absent" }}
+    purge=yes
+  tags: www
+
+- name: initialize or destroy /var/www
+  file: >
+    dest=/var/www/
+    owner=www-data
+    group=www-data
+    state={{ "directory" if www else "absent" }}
+  tags: www
+
+- name: copy static html resources
+  copy: >
+    src=styling.css
+    dest=/var/www/styling.css
+    owner=www-data
+    group=www-data
+  when: www
+  tags: www
+
+- name: copy templated html resources
+  template: >
+    src=index.html
+    dest=/var/www/index.html
+    owner=www-data
+    group=www-data
+  when: www
+  tags: www
+
+- name: configure nginx
+  template: >
+    src=sites-available/default
+    dest=/etc/nginx/sites-available/default
+  notify: reload nginx
+  when: www
+  tags: www
+
+# ubuntu defaults this to 4, but nginx shouldn't ever be under load anyways
+- name: set nginx worker_processes
+  lineinfile: >
+    dest=/etc/nginx/nginx.conf
+    line="worker_processes 1;"
+    regexp="worker_processes\s.+"
+  notify: reload nginx
+  when: www
+  tags: www
+
+- name: enable nginx
+  service: >
+    name=nginx
+    enabled=yes
+    state=started
+  when: www
+  tags: www
+
+- name: whitelist nginx in firewall
+  ufw: rule=allow port={{ www_port }} proto=tcp
+  when: www and ufw
+  tags: [www, ufw]

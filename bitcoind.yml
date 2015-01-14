@@ -1,0 +1,7 @@
+---
+# Do not run this playbook directly, it's intended to be called via site.yml
+- hosts: bitcoind
+  user: root
+  sudo: no
+  roles:
+    - bitcoind

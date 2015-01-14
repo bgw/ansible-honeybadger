@@ -1,0 +1,4 @@
+---
+# this needs to be able to be turned off, because it can break some OVZ
+# configurations.
+ufw: yes

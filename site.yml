@@ -1,0 +1,20 @@
+---
+- hosts: all
+  remote_user: root
+  sudo: no
+  roles:
+    # common setup (needed by both tor and bitcoind)
+    - bootstrap
+    - openssh
+    - ufw
+    - monit
+    - www
+    # core services
+    - {role: bitcoind, when: bitcoind}
+    - {role: tor, when: tor}
+    # these are extras, feel free to remove them:
+    - htop
+    - {role: bitcoind-rpc, when: bitcoind}
+    - {role: tor-arm, when: tor}
+    - aptitude
+    - unattended-upgrades

@@ -1,0 +1,8 @@
+---
+- name: reload nginx
+  service: name=nginx state=reloaded
+  tags: www
+
+- name: ensure tor is running
+  service: name=tor state=started
+  tags: www

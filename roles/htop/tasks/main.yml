@@ -1,0 +1,4 @@
+---
+- name: install htop
+  apt: name=htop
+  tags: htop

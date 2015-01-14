@@ -1,0 +1,75 @@
+#!/bin/sh
+# Install python remotely and fix common server image misconfigurations.
+
+set -eu
+
+is_dashed() {
+    echo "$1" | grep -q '^-'
+}
+
+bad_args() {
+    echo "Usage: $0 example.com"
+    echo "       $0 localhost"
+    echo
+    echo "Run this script on the deployment machine, passing in the address of"
+    echo "the target server. This will attempt to fix common server"
+    echo "configuration issues that must be solved before ansible can be run."
+}
+
+if test "$#" -ne 1; then
+    bad_args >&2
+    exit 1
+fi
+
+# catch the user if they try -h or --help
+if is_dashed "$1"; then
+    bad_args
+    exit 0
+fi
+
+REMOTE=$1
+
+echob() {
+    tput bold
+    echo; echo "[$REMOTE]" "$@"
+    tput sgr0
+}
+
+# Configure SSH_CMD
+if test "$REMOTE" = localhost; then
+    SSH_CMD=""
+    if test "$(whoami)" != root; then
+        echo "$0 must be run as root"
+        exit 1
+    fi
+else
+    SSH_CMD="ssh root@$REMOTE"
+
+    echob "Copying ssh key (if needed)"
+    helpers/ssh-copy-id root@$REMOTE
+fi
+
+echob "Reconfiguring apt keyring"
+# Some OpenVZ templates have broken gpg keys
+$SSH_CMD dpkg-reconfigure --frontend=noninteractive ubuntu-keyring > /dev/null
+echo success
+
+echob "Installing python2, git, pip, and virtualenv"
+$SSH_CMD sh -s <<EOF
+# Aptitude is kinda slow, so we do this kludge to avoid running it if possible
+set -eu
+
+APT_DEPS=""
+has_dep() {
+    command -v "\$1" >/dev/null 2>&1
+}
+if ! has_dep "python2"; then APT_DEPS="\$APT_DEPS python2"; fi
+if ! has_dep "git"; then APT_DEPS="\$APT_DEPS git"; fi
+if ! has_dep "pip"; then APT_DEPS="\$APT_DEPS python-pip"; fi
+if test -n "\$APT_DEPS"; then
+    apt-get update -yqq
+    apt-get install \$APT_DEPS -yqq
+fi
+if ! has_dep "virtualenv"; then pip install --quiet virtualenv; fi
+EOF
+echo success

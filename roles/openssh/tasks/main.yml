@@ -1,0 +1,50 @@
+# lineinfile is unfortunately too limited/messy for some of our stuff, so we use
+# fragments, starting by copying the old configuration into the fragment
+# directory
+- name: setup sshd_config fragment directory
+  file: >
+    dest=/etc/ssh/sshd_config.d
+    mode=755
+    owner=root
+    group=root
+    state=directory
+  register: openssh_fragment_result
+  tags: openssh
+
+- name: add warning header to /etc/ssh/sshd_config
+  copy: >
+    src=10header
+    dest=/etc/ssh/sshd_config.d/10header
+    mode=644
+    owner=root
+    group=root
+  notify:
+    - assemble sshd_config
+    - reload openssh
+  tags: openssh
+
+- name: copy /etc/ssh/sshd_config to /etc/ssh/sshd_config.d/50debian
+  command: >
+    cp /etc/ssh/sshd_config /etc/ssh/sshd_config.d/50debian
+    creates=/etc/ssh/sshd_config.d/50debian
+  notify:
+    - assemble sshd_config
+    - reload openssh
+  tags: openssh
+
+# Based on (under CC0/Public Domain):
+# http://lattejed.com/first-five-and-a-half-minutes-on-a-server-with-ansible
+- name: disable password authentication for openssh
+  lineinfile: >
+    dest=/etc/ssh/sshd_config.d/50debian
+    regexp="^#?{{item.key}}"
+    line="{{item.key}} {{item.value}}"
+  with_items:
+    - {key: PasswordAuthentication, value: "no"}
+    - {key: PermitRootLogin, value: "without-password"}
+    - {key: PubkeyAuthentication, value: "yes"}
+    - {key: RSAAuthentication, value: "yes"}
+  notify:
+    - assemble sshd_config
+    - reload openssh
+  tags: openssh

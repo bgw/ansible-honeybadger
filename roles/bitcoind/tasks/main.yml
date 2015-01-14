@@ -1,0 +1,76 @@
+---
+- name: add bitcoind apt repository
+  apt_repository: repo='ppa:bitcoin/bitcoin'
+  tags: bitcoind
+
+- name: install bitcoind
+  apt: name=bitcoind state=latest
+  with_items:
+    - bitcoind
+  notify:
+    - restart bitcoind
+  tags: bitcoind
+
+- name: add bitcoind user
+  user: >
+    name=bitcoind
+    system=yes
+    createhome=no
+  tags: bitcoind
+
+- name: configure bitcoind
+  template: >
+    src={{ item.key }}
+    dest={{ item.value }}
+    mode=640
+    owner=root
+    group=bitcoind
+  with_dict:
+    bitcoin.conf: /etc/bitcoin.conf
+    upstart.override: /etc/init/bitcoind.override
+  notify:
+    - restart bitcoind
+  tags: bitcoind
+
+- name: create bitcoind data directory
+  file: >
+    dest=/var/lib/bitcoind
+    mode=755
+    owner=bitcoind
+    group=bitcoind
+    state=directory
+  tags: bitcoind
+
+- name: install bitcoind upstart script
+  copy: >
+    src=upstart.conf
+    dest=/etc/init/bitcoind.conf
+    mode=644
+    owner=root
+    group=root
+  notify:
+    - restart bitcoind
+  tags: bitcoind
+
+- name: enable bitcoind
+  service: >
+    name=bitcoind
+    enabled=yes
+    state=started
+  tags: bitcoind
+
+- name: install bitcoind monit script
+  template: >
+    src=bitcoind.monit
+    dest=/etc/monit/conf.d/bitcoind
+    mode=644
+    owner=root
+    group=root
+  notify:
+    - reload monit
+  tags: [bitcoind, monit]
+
+- name: whitelist bitcoind in firewall
+  ufw: rule=allow port={{ bitcoind_port }} proto=tcp
+  when: ufw
+  tags: [bitcoind, ufw]

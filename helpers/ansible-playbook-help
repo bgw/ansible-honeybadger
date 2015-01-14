@@ -1,0 +1,57 @@
+GPLv3+ licensed. Extracted from ansible-playbook. Needs to exist statically for
+autosetup's --help option, because ansible may not be installed yet.
+
+Options:
+  -k, --ask-pass        ask for SSH password
+  --ask-su-pass         ask for su password
+  -K, --ask-sudo-pass   ask for sudo password
+  --ask-vault-pass      ask for vault password
+  -C, --check           don't make any changes; instead, try to predict some
+                        of the changes that may occur
+  -c CONNECTION, --connection=CONNECTION
+                        connection type to use (default=ssh)
+  -D, --diff            when changing (small) files and templates, show the
+                        differences in those files; works great with --check
+  -e EXTRA_VARS, --extra-vars=EXTRA_VARS
+                        set additional variables as key=value or YAML/JSON
+  --flush-cache         clear the fact cache
+  --force-handlers      run handlers even if a task fails
+  -f FORKS, --forks=FORKS
+                        specify number of parallel processes to use
+                        (default=5)
+  -h, --help            show this help message and exit
+  -i INVENTORY, --inventory-file=INVENTORY
+                        specify inventory host file (default=hosts)
+  -l SUBSET, --limit=SUBSET
+                        further limit selected hosts to an additional pattern
+  --list-hosts          outputs a list of matching hosts; does not execute
+                        anything else
+  --list-tasks          list all tasks that would be executed
+  -M MODULE_PATH, --module-path=MODULE_PATH
+                        specify path(s) to module library (default=None)
+  --private-key=PRIVATE_KEY_FILE
+                        use this file to authenticate the connection
+  --skip-tags=SKIP_TAGS
+                        only run plays and tasks whose tags do not match these
+                        values
+  --start-at-task=START_AT
+                        start the playbook at the task matching this name
+  --step                one-step-at-a-time: confirm each task before running
+  -S, --su              run operations with su
+  -R SU_USER, --su-user=SU_USER
+                        run operations with su as this user (default=root)
+  -s, --sudo            run operations with sudo (nopasswd)
+  -U SUDO_USER, --sudo-user=SUDO_USER
+                        desired sudo user (default=root)
+  --syntax-check        perform a syntax check on the playbook, but do not
+                        execute it
+  -t TAGS, --tags=TAGS  only run plays and tasks tagged with these values
+  -T TIMEOUT, --timeout=TIMEOUT
+                        override the SSH timeout in seconds (default=10)
+  -u REMOTE_USER, --user=REMOTE_USER
+                        connect as this user (default=<current_user>)
+  --vault-password-file=VAULT_PASSWORD_FILE
+                        vault password file
+  -v, --verbose         verbose mode (-vvv for more, -vvvv to enable
+                        connection debugging)
+  --version             show program's version number and exit

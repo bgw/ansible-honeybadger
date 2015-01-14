@@ -1,0 +1,4 @@
+---
+- name: install tor-arm
+  apt: name=tor-arm
+  tags: tor-arm

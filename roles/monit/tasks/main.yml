@@ -1,0 +1,22 @@
+---
+- name: install monit
+  apt: name=monit
+  tags: monit
+
+- name: configure monit
+  template: >
+    src=monitrc
+    dest=/etc/monit/monitrc
+    mode=600
+    owner=root
+    group=root
+    validate='monit -t -c %s'
+  notify: reload monit
+  tags: monit
+
+- name: enable monit
+  service: >
+    name=monit
+    enabled=yes
+    state=started
+  tags: monit

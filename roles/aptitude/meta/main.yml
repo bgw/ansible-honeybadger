@@ -1,0 +1,7 @@
+---
+dependencies:
+  - role: openssh-command
+    openssh_command_user: aptitude
+    openssh_command_cmd: sudo aptitude
+    openssh_command_groups: sudo
+    tags: aptitude

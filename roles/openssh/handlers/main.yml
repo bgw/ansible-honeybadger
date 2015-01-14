@@ -1,0 +1,11 @@
+---
+- name: assemble sshd_config
+  assemble: >
+    src=/etc/ssh/sshd_config.d
+    dest=/etc/ssh/sshd_config
+    mode=644
+    owner=root
+    group=root
+
+- name: reload openssh
+  service: name=ssh state=reloaded

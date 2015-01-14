@@ -1,0 +1,38 @@
+---
+## A config for ansible-honeybadger that configures all available services.
+## More options can be found in roles/tor/defaults and roles/bitcoind/defaults.
+
+## Tor #########################################################################
+
+tor_nickname: ansiblehoneybadger # you should probably change this
+tor_contact_info: foobar AT example DOT com # delete this to remain anonymous
+
+# if you delete the tor_bandwidth_rate lines, we'll be unmetered
+tor_bandwidth_rate: 100 KB # per second
+tor_bandwidth_burst: 500 KB # per second, must be at least tor_bandwidth_rate
+
+tor_exit_policy: # don't act as an exit relay by default
+  - reject *:*
+  # See also: https://www.torproject.org/docs/faq.html.en#ExitPolicies
+
+tor_bridge: no # https://www.torproject.org/docs/bridges
+tor_bridge_publish: yes # should we publish to bridges.torproject.org
+
+tor_restart_interval: 90 days # restart every 90 days, just in case
+tor_extra: |
+  # You can add extra options for your torrc here. They get appended to your
+  # torrc.
+
+## Bitcoin #####################################################################
+
+bitcoind_maxconnections: 125
+bitcoind_restart_interval: 90 days # restart every 90 days, just in case
+bitcoind_extra: |
+  # You can add extra options for your bitcoin.conf here. They get appended to
+  # your torrc.
+
+## Misc ########################################################################
+
+www_donations: |
+  Bitcoins are gladly accepted:
+  1changemeintheconfig1tLYassWTwcvrg

@@ -1,0 +1,12 @@
+---
+dependencies:
+  - role: openssh-command
+    openssh_command_user: bitcoind-getinfo
+    openssh_command_cmd: bitcoin-cli -conf=/etc/bitcoin.conf getinfo
+    openssh_command_groups: bitcoind
+    tags: bitcoind-rpc
+  - role: openssh-command
+    openssh_command_user: bitcoind-getpeerinfo
+    openssh_command_cmd: bitcoin-cli -conf=/etc/bitcoin.conf getpeerinfo
+    openssh_command_groups: bitcoind
+    tags: bitcoind-rpc

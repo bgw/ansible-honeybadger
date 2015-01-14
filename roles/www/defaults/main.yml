@@ -1,0 +1,7 @@
+---
+# some variables are mirrored in roles/tor/defaults/main.yml, and should be
+# updated if this file is changed
+www: yes
+www_hostname: "{{ inventory_hostname }}"
+www_port: 80
+www_donations: null

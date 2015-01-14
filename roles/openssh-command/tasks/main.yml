@@ -1,0 +1,60 @@
+---
+- name: running openssh-command for another role
+  debug: 'msg="configure {{ openssh_command_user }}@{{ inventory_hostname }}"'
+  tags: openssh-command
+
+- name: add ssh user
+  user: >
+    name={{ openssh_command_user }}
+    groups={% if openssh_command_groups is string %}{{ openssh_command_groups
+           }}{% else %}{{ openssh_command_groups | join(",") }}{% endif %}
+    createhome=yes
+    system=no
+  tags: openssh-command
+
+- name: construct /home/{{ openssh_command_user }}/.ssh
+  file: >
+    dest=/home/{{ openssh_command_user }}/.ssh
+    mode=700
+    owner={{ openssh_command_user }}
+    group={{ openssh_command_user }}
+    state=directory
+  tags: openssh-command
+
+# we can't use "creates", because if we add another key later, we want it copied
+- name: check the modified date of the authorized_keys files
+  command: >
+    test /root/.ssh/authorized_keys -nt
+         /home/{{ openssh_command_user }}/.ssh/authorized_keys
+  register: result
+  changed_when: false
+  failed_when: false
+  always_run: true
+  tags: openssh-command
+
+- name: copy root's authorized_keys file
+  command: >
+    cp /root/.ssh/authorized_keys
+    /home/{{ openssh_command_user }}/.ssh/authorized_keys
+  when: result.rc == 0
+  tags: openssh-command
+
+- name: chown our authorized_keys file
+  file: >
+    dest=/home/{{ openssh_command_user }}/.ssh/authorized_keys
+    owner={{ openssh_command_user }}
+    group={{ openssh_command_user }}
+  tags: openssh-command
+
+- name: set up openssh config
+  copy: >
+    dest=/etc/ssh/sshd_config.d/80{{ openssh_command_user }}
+    content="Match User {{ openssh_command_user }}
+      ForceCommand {{ openssh_command_cmd }}"
+    mode=644
+    owner=root
+    group=root
+  notify:
+    - assemble sshd_config
+    - reload openssh
+  tags: openssh-command

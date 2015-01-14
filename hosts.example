@@ -1,0 +1,9 @@
+# you can run only one service on your box
+bitcoind.example.com     bitcoind=True
+tor.example.com          tor=True
+
+# or multiple!
+honeybadger.example.com  bitcoind=True tor=True
+
+# make sure you specify something though. Honeybadger isn't very useful without
+# any services.

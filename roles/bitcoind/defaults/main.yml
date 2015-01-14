@@ -1,0 +1,17 @@
+---
+# we leave services off by default. If we add new services, we don't want them
+# automatically installing on old configurations.
+bitcoind: no
+
+bitcoind_address: null
+bitcoind_port: 8333
+bitcoind_maxconnections: 125
+# extra rules to append to bitcoin.conf
+bitcoind_extra: "# no extra options declared"
+# rpc for localhost
+bitcoind_rpc_port: 8332
+bitcoind_rpc_user: bitcoinrpc
+bitcoind_rpc_password: this_is_localhost_only_so_it_doesnt_really_matter
+# upstart/monit options
+bitcoind_restart_interval: 90 days
+bitcoind_nice: 0

@@ -1,0 +1,28 @@
+---
+- name: install ufw
+  apt: name=ufw
+  when: ufw
+  tags: ufw
+
+- name: change ufw's openssh config if ansible_ssh_port is non-standard
+  lineinfile: >
+    dest=/etc/ufw/applications.d/openssh-server
+    state=present
+    regexp="ports=.+"
+    line="ports={{ ansible_ssh_port | default(22) }}/tcp"
+  when: ufw
+  tags: ufw
+
+- name: whitelist openssh in firewall
+  ufw: rule=allow name=OpenSSH
+  when: ufw
+  tags: ufw
+
+- name: enable firewall logging
+  ufw: logging=low
+  when: ufw
+  tags: ufw
+
+- name: enable/disable firewall
+  ufw: state={{ "enabled" if ufw else "disabled" }}
+  tags: ufw

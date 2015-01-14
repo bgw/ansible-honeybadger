@@ -1,0 +1,6 @@
+---
+dependencies:
+  - role: openssh-command
+    openssh_command_user: htop
+    openssh_command_cmd: htop
+    tags: htop

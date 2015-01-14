@@ -1,0 +1,52 @@
+---
+- name: test we're on ubuntu 14.04 lts
+  pause: seconds=0
+  failed_when: >
+    ansible_distribution != "Ubuntu" or ansible_distribution_release != "trusty"
+  tags: bootstrap
+
+- name: test that at least one service is enabled
+  pause: seconds=0
+  failed_when: tor == False and bitcoind == False
+  tags: bootstrap
+
+- name: fix locale configuration (for english anyways)
+  command: locale-gen en
+  register: result
+  changed_when: '"done" in result.stdout'
+  tags: bootstrap
+
+# Older versions of ansible required you install things like python-apt, but
+# fortunately newer versions of ansible do that for us. We're installing
+# aptitude because we need it for the "full" upgrade option.
+- name: install aptitude
+  apt: name=aptitude
+  tags: bootstrap
+
+- name: remove apache2, if installed (may conflict)
+  apt: name=apache2 state=absent
+  tags: bootstrap
+
+- name: update system packages
+  apt: >
+    update_cache=yes
+    cache_valid_time=240
+    upgrade=full
+  tags: bootstrap
+
+- name: install sudo
+  apt: name=sudo
+  tags: bootstrap
+
+- name: create sudo group
+  group: name=sudo system=yes
+  tags: bootstrap
+
+# We already have strong authentication via RSA keys, so this shouldn't present
+# any security problems. AWS does it on their Ubuntu images.
+- name: make sudo passwordless
+  lineinfile: >
+    dest=/etc/sudoers
+    regexp="^(# ?)?%sudo"
+    line="%sudo ALL=(ALL) NOPASSWD: ALL"
+  tags: bootstrap

@@ -1,0 +1,141 @@
+---
+- name: add tor apt key
+  apt_key: >
+    keyserver=pgp.mit.edu
+    id=A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89
+  # Unfortunately check-mode always reports apt_key as changed
+  changed_when: False
+  tags: tor
+
+- name: add tor apt repository
+  apt_repository: >
+    repo='deb http://deb.torproject.org/torproject.org trusty main'
+    update_cache=yes
+  tags: tor
+
+- name: install tor
+  apt: name={{ item }} state=latest
+  with_items:
+    - tor
+    - deb.torproject.org-keyring
+  notify:
+    - restart tor
+  tags: tor
+
+- name: configure tor
+  template: >
+    src=torrc
+    dest=/etc/tor/torrc
+    mode=644
+    owner=root
+    group=root
+  register: configure_result # triggers a restart later
+  tags: tor
+
+- name: install procname dependencies
+  apt: name=build-essential
+  when: tor_procname != "tor"
+  tags: tor
+
+- name: download procname
+  git: >
+    repo=https://github.com/electrum/procname.git
+    dest=/opt/procname
+    version=5174c7eaebb3c5add7f97a09070a6e11b72b2f3a
+  register: procname_clone_result
+  when: tor_procname != "tor"
+  tags: tor
+
+- name: build procname
+  command: make chdir=/opt/procname
+  when: tor_procname != "tor" and procname_clone_result|changed
+  tags: tor
+
+- name: change tor process name
+  lineinfile: >
+    dest=/etc/default/tor
+    regexp="^export {{ item.key }}="
+    line="export {{ item.key }}={{ item.value }}"
+  with_dict:
+    LD_PRELOAD: /opt/procname/libprocname.so
+    PROCNAME: "{{ tor_procname }}"
+  notify:
+    - reload tor
+    - reload monit
+  when: tor_procname != "tor"
+  tags: tor
+
+- name: initialize /var/lib/tor directory structure
+  file:
+    dest=/var/lib/tor/{{ item }}
+    mode=2700
+    owner=debian-tor
+    group=debian-tor
+    state=directory
+  with_items: ["", keys]
+  register: tor_dir_structure
+  tags: tor
+
+- name: copy tor key (if we have backups)
+  copy: >
+    src={{ item }}
+    dest=/var/lib/tor/keys/secret_id_key
+    mode=600
+    owner=debian-tor
+    group=debian-tor
+  # https://github.com/ansible/ansible/issues/2372
+  with_first_found:
+    - ../../../secrets/tor/{{ inventory_hostname }}_secret_id_key
+  failed_when: False
+  notify:
+    - reload tor
+  tags: tor
+
+- name: enable tor
+  service: >
+    name=tor
+    enabled=yes
+    state=started
+  tags: tor
+
+# Restart tor if its configuration changed. This *must* be done before backing
+# up, because secret_id_key is only generated when tor thinks its a relay.
+#
+# This must be a restart and not a reload, because DisableDebuggerAttachment
+# cannot be reconfigured without a full restart.
+- name: restart tor
+  service: >
+    name=tor
+    state=restarted
+  when: configure_result|changed
+  tags: tor
+
+- name: backup tor key
+  fetch: >
+    src=/var/lib/tor/keys/secret_id_key
+    dest=secrets/tor/{{ inventory_hostname }}_secret_id_key
+    fail_on_missing=yes
+    flat=yes
+  tags: tor
+
+- name: install tor monit script
+  template: >
+    src=tor.monit
+    dest=/etc/monit/conf.d/tor
+    mode=644
+    owner=root
+    group=root
+  notify:
+    - reload monit
+  tags: [tor, monit]
+
+- name: whitelist tor_dir_port in firewall
+  ufw: rule=allow port={{ tor_dir_port }} proto=tcp
+  # opening dir port is www's responsibility if forwarding is happening
+  when: ufw and (www_port != tor_dir_port or not www)
+  tags: [tor, ufw]
+
+- name: whitelist tor_or_port in firewall
+  ufw: rule=allow port={{ tor_or_port }} proto=tcp
+  when: ufw
+  tags: [tor, ufw]

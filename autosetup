@@ -1,0 +1,123 @@
+#!/usr/bin/env sh
+set -eu
+
+# logging utilities
+FMT="fmt -w 80"
+echob() {
+    tput bold
+    echo "$@"
+    tput sgr0
+}
+echo_header() {
+    echo
+    tput smul # underline
+    echob "$1"
+}
+echo_and_run() {
+    echo "$ $@"
+    $@
+}
+
+# dependency management
+HAS_DEPENDENCIES=1
+ensure_exists() {
+    if command -v "$1" >/dev/null 2>&1; then
+        return 0
+    fi
+    echo >&2 "We need \`$(echob -n "$1")\`, but it's not installed."
+    if test -f /etc/debian_version; then
+        install_with "$1" "$2"
+    elif test -f /etc/arch-release; then
+        install_with "$1" "$3"
+    fi
+    HAS_DEPENDENCIES=0
+}
+install_with() {
+    echo "You can install \`$(echob -n "$1")\` with:" >&2
+    echo "    $2" | $FMT >&2
+}
+
+# argument parsing
+NO_CONFIG=
+if test "$#" -ne 0; then
+    if test "$1" = "--help" -o "$1" = "-h"; then
+        echo "Usage $0 [--no-config] [ansible-playbook arguments]"
+        echo
+        echo "Automatically installs python dependencies, prompts for" \
+             "configuration options, and runs ansible-playbook." | $FMT
+        echo
+        echo "autosetup options:"
+        echo "  --no-config           skip the interactive configuration step"
+        echo
+        echo "ansible-playbook options:"
+        tail -n +5 helpers/ansible-playbook-help
+        exit 0
+    fi
+
+    if test "$1" = "--no-config"; then
+        NO_CONFIG=true
+        shift
+    fi
+fi
+
+if test -d "host_vars" -o -e "hosts"; then
+    NO_CONFIG=true
+    echob "host_vars or hosts files are already defined, skipping configuration"
+fi
+
+echo_header "README"
+echo "This is a high-level utility for configuring and running honeybadger." \
+     "You are encouraged to tweak your configuration and look through the" \
+     "example configuration files." | $FMT
+echo "Hit ctrl+c at any time to stop autosetup."
+
+echo_header "Testing that our system-wide dependencies are installed"
+ensure_exists python2 \
+    '`aptitude install python` or `apt-get install python`' \
+    '`pacman -S python2`'
+ensure_exists pip \
+    '`aptitude install pip` or `apt-get install pip`' \
+    '`pacman -S python-pip`'
+ensure_exists virtualenv \
+    '`pip install virtualenv` or `aptitude install python-virtualenv` or `apt-get python-virtualenv`' \
+    '`pip install virtualenv` or `pacman -S python-virtualenv`'
+if test $HAS_DEPENDENCIES -eq 0; then
+    exit 1
+fi
+echo "We're good to go!"
+
+cd "$(dirname "$0")"
+if test ! -d .env; then
+    echo_header "Setting up a virtualenv in '.env'"
+    virtualenv --python=python2 .env
+fi
+
+echo_header "Installing local dependencies into '.env'"
+echo_and_run .env/bin/pip install --quiet -r requirements.txt
+
+if test "$NO_CONFIG" != true; then
+    echo_header "Generating configuration files"
+    .env/bin/python2 helpers/autoconfig.py
+fi
+
+echo_header "Running bootstrap script on remote hosts"
+(
+    # split on linebreaks
+    IFS="
+"
+    for i in $(.env/bin/python2 helpers/inventory-to-ssh.py); do
+        echo_and_run helpers/bootstrap "$i"
+    done
+)
+
+echo_header "Running ansible on remote hosts"
+echo_and_run .env/bin/ansible-playbook site.yml "$@"
+
+echo_header "Success!"
+echo "Now's a good time to set up some monitoring tools:"
+echo "- https://weather.torproject.org/"
+echo "- https://uptimerobot.com/"
+echo
+echo "You should also consider signing up for emails about critical issues in "
+echo "Honeybadger:"
+echo "- http://eepurl.com/bbanlP"

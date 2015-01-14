@@ -1,0 +1,17 @@
+---
+- name: install unattended-upgrades
+  apt: name=unattended-upgrades
+  tags: unattended-upgrades
+
+- name: configure unattended-upgrades
+  action: >
+    {{ item.action }}
+    src={{ item.src }}
+    dest=/etc/apt/apt.conf.d/{{ item.src }}
+    mode=644
+    owner=root
+    group=root
+  with_items:
+    - {action: copy, src: 20auto-upgrades}
+    - {action: template, src: 50unattended-upgrades}
+  tags: unattended-upgrades

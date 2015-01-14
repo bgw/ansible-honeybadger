@@ -1,0 +1,6 @@
+hosts
+host_vars/
+group_vars/
+secrets/
+.env/
+*.egg-info/
