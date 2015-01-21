@@ -60,9 +60,14 @@ if test "$#" -ne 0; then
     fi
 fi
 
-if test -d "host_vars" -o -e "hosts"; then
-    NO_CONFIG=true
-    echob "host_vars or hosts files are already defined, skipping configuration"
+# TODO: Instead of simply skipping reconfiguration, interactively prompt user if
+# they want to update their configuration.
+if test "$NO_CONFIG" != true; then
+    if test -d "host_vars" -o -e "hosts"; then
+        NO_CONFIG=true
+        echob "host_vars or hosts files are already defined, skipping" \
+              "configuration"
+    fi
 fi
 
 echo_header "README"
