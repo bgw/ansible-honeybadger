@@ -4,7 +4,7 @@
     keyserver=pgp.mit.edu
     id=A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89
   # Unfortunately check-mode always reports apt_key as changed
-  changed_when: False
+  changed_when: false
   tags: tor
 
 - name: add tor apt repository
@@ -76,17 +76,23 @@
   register: tor_dir_structure
   tags: tor
 
-- name: copy tor key (if we have backups)
+- name: check if we have a backup tor key
+  local_action: command /usr/bin/test -e
+    {{ playbook_dir }}/secrets/tor/{{ inventory_hostname }}_secret_id_key
+  failed_when: false
+  changed_when: false
+  always_run: true
+  register: has_backup_key_result
+  tags: tor
+
+- name: copy tor key
   copy: >
-    src={{ item }}
+    src=secrets/tor/{{ inventory_hostname }}_secret_id_key
     dest=/var/lib/tor/keys/secret_id_key
     mode=600
     owner=debian-tor
     group=debian-tor
-  # https://github.com/ansible/ansible/issues/2372
-  with_first_found:
-    - ../../../secrets/tor/{{ inventory_hostname }}_secret_id_key
-  failed_when: False
+  when: has_backup_key_result.rc == 0
   notify:
     - reload tor
   tags: tor
