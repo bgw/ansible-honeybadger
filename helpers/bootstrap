@@ -63,7 +63,7 @@ APT_DEPS=""
 has_dep() {
     command -v "\$1" >/dev/null 2>&1
 }
-if ! has_dep "python2"; then APT_DEPS="\$APT_DEPS python2"; fi
+if ! has_dep "python2"; then APT_DEPS="\$APT_DEPS python"; fi
 if ! has_dep "git"; then APT_DEPS="\$APT_DEPS git"; fi
 if ! has_dep "pip"; then APT_DEPS="\$APT_DEPS python-pip"; fi
 if test -n "\$APT_DEPS"; then
