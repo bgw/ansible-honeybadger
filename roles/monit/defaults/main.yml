@@ -3,3 +3,4 @@ monit_poll_period: 120 # every two minutes
 monit_start_delay: 240 # wait 4 minutes after reboot before starting monit
 monit_logfile: /var/log/monit.log
 monit_extra: "# no extra options defined"
+monit_port: 2812
