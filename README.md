@@ -91,7 +91,8 @@ Requirements
     next to your corporate email!
 
 -   If you want to enable bitcoind, [you'll need enough **disk space** to store
-    the blockchain, with some room to grow][blockchain size].
+    the blockchain, with some room to grow][blockchain size]. Bitcoind also
+    needs *more than* 256mb of RAM.
 
 -   Tor runs poorly with 96mb of RAM, okay with 128mb of RAM, and can probably
     steadily max out an unmetered 100mbit port with 256mb of RAM. Keep in mind
