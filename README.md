@@ -137,10 +137,12 @@ These save you a bit of typing and give you some cool geek cred. They copy the
 ssh `authorized_keys` files from the root user, so if you add any more ssh keys,
 simply re-run ansible-honeybadger.
 
-We also set up a page on port 80 for you, eg. [a Tor node][hostus]. This relies
-on Tor's built-in webserver, and won't work without Tor *yet*.
+We also set up a page on port 80 for you using nginx ([example][hostus]). This
+doesn't inhibit Tor from using port 80 however, because we can [proxy the
+DirPort][dirport proxy].
 
 [hostus]: http://hostus.benjam.info/
+[dirport proxy]: https://trac.torproject.org/projects/tor/wiki/doc/TorFAQ#HowcanImakemyrelayaccessibletopeoplestuckbehindrestrictivefirewalls
 
 Bandwidth Throttling
 --------------------
