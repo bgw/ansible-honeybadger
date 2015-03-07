@@ -18,16 +18,34 @@
     createhome=no
   tags: bitcoind
 
+# Ubuntu has a cpulimit package, but it's a different version that can't do
+# process groups.
+- name: install cpulimit dependencies
+  apt: name=build-essential
+  when: bitcoind_cpulimit
+  tags: bitcoind
+
+- name: download cpulimit
+  git: >
+    repo=https://github.com/opsengine/cpulimit.git
+    dest=/opt/cpulimit
+    version=fd48ecf5a123ddaf5dd02d7928f975db719975bb
+  register: cpulimit_clone_result
+  when: bitcoind_cpulimit
+  tags: bitcoind
+
+- name: build cpulimit
+  command: make chdir=/opt/cpulimit
+  when: bitcoind_cpulimit and cpulimit_clone_result|changed
+  tags: bitcoind
+
 - name: configure bitcoind
   template: >
-    src={{ item.key }}
-    dest={{ item.value }}
+    src=bitcoin.conf
+    dest=/etc/bitcoin.conf
     mode=640
     owner=root
     group=bitcoind
-  with_dict:
-    bitcoin.conf: /etc/bitcoin.conf
-    upstart.override: /etc/init/bitcoind.override
   notify:
     - restart bitcoind
   tags: bitcoind
@@ -42,12 +60,21 @@
   tags: bitcoind
 
 - name: install bitcoind upstart script
-  copy: >
+  template: >
     src=upstart.conf
     dest=/etc/init/bitcoind.conf
     mode=644
     owner=root
     group=root
+  notify:
+    - restart bitcoind
+  tags: bitcoind
+
+# old versions of honeybadger might leave this behind (March 6th, 2015)
+- name: remove old bitcoind upstart override file
+  file: >
+    dest=/etc/init/bitcoind.override
+    state=absent
   notify:
     - restart bitcoind
   tags: bitcoind
