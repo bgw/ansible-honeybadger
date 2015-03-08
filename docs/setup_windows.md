@@ -2,7 +2,7 @@ Setup on Windows
 ================
 
 **These instructions aren't very well-tested. Please file an issue about any
-positive or negative experience you have with them**
+positive or negative experience you have with them.**
 
 Unfortunately, running ansible-honeybadger on Windows isn't possible. Don't
 worry! We can run it directly on your server. This is fine, as long as you're
@@ -41,7 +41,7 @@ Install
 4.  Download and run the bootstrap script:
 
     ```sh
-    $ wget https://raw.github.com/pipeep/ansible-honeybadger/master/bootstrap
+    $ wget https://raw.github.com/pipeep/ansible-honeybadger/master/helpers/bootstrap
     $ ./bootstrap localhost
     ```
 
