@@ -27,7 +27,7 @@
   apt: name=apache2 state=absent
   tags: bootstrap
 
-- name: update system packages
+- name: update system packages (this may take a while)
   apt: >
     update_cache=yes
     cache_valid_time=240

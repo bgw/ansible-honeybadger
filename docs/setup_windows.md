@@ -42,7 +42,7 @@ Install
 
     ```sh
     $ wget https://raw.github.com/pipeep/ansible-honeybadger/master/helpers/bootstrap
-    $ ./bootstrap localhost
+    $ sh bootstrap localhost
     ```
 
 5.  Clone the git repository
@@ -57,6 +57,8 @@ Install
     ```sh
     $ ./autosetup
     ```
+
+    *Make sure to pick "localhost" (not remote) when prompted.*
 
 [putty]: http://www.chiark.greenend.org.uk/~sgtatham/putty/download.html
 [do rsa]: https://www.digitalocean.com/community/tutorials/how-to-use-ssh-keys-with-putty-on-digitalocean-droplets-windows-users

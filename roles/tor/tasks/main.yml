@@ -116,6 +116,12 @@
   when: configure_result|changed
   tags: tor
 
+# if run on localhost, the commands will get run too quickly, and the key won't
+# actually be written out before we try to copy it.
+- name: wait for tor key to get written out
+  pause: seconds=2
+  tags: tor
+
 - name: backup tor key
   fetch: >
     src=/var/lib/tor/keys/secret_id_key

@@ -39,7 +39,7 @@ def prompt():
         inquirer.List("location",
                       "Where are we setting up honeybadger on?",
                       choices=["One or more remote servers (ssh, recommended)",
-                               "This machine (localhost)"]),
+                               "This machine (localhost, eg. Windows setup)"]),
     ]
     local = "localhost" in inquirer.prompt(questions)["location"]
 
@@ -117,15 +117,15 @@ def prompt_host(local=False, prev={}):
                           default=str(prev.get("tor_dir_port", "80")),
                           validate=validate_tcp_port),
             inquirer.Text("tor_bandwidth_rate",
-                          "[{name}] Average bandwidth per second "
-                          "(eg. '75 KBytes')",
-                          default=prev.get("tor_bandwidth_rate"),
+                          "[{name}] Avg bandwidth each way per second (half of "
+                          "total)",
+                          default=prev.get("tor_bandwidth_rate", "100 KBytes"),
                           ignore=lambda a: a["is_unmetered"],
                           validate=validate_tor_bandwidth),
             inquirer.Text("tor_bandwidth_burst",
-                          "[{name}] Max burst bandwidth per second "
-                          "(eg. '125 KBytes')",
-                          default=prev.get("tor_bandwidth_burst"),
+                          "[{name}] Max burst bandwidth per second in each "
+                          "direction",
+                          default=prev.get("tor_bandwidth_burst", "300 KBytes"),
                           ignore=lambda a: a["is_unmetered"],
                           validate=validate_tor_bandwidth),
         ]

@@ -10,7 +10,7 @@
     mode=600
     owner=root
     group=root
-    validate='monit -t -c %s'
+    validate="sh -c 'F=%s; chmod 600 $F; monit -t -c $F'"
   notify: reload monit
   tags: monit
 
