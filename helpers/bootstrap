@@ -52,7 +52,7 @@ fi
 echob "Reconfiguring apt keyring"
 # Some OpenVZ templates have broken gpg keys
 $SSH_CMD dpkg-reconfigure --frontend=noninteractive ubuntu-keyring > /dev/null
-echo success
+echo Success!
 
 echob "Installing python2, git, pip, and virtualenv"
 $SSH_CMD sh -s <<EOF
@@ -61,15 +61,19 @@ set -eu
 
 APT_DEPS=""
 has_dep() {
-    command -v "\$1" >/dev/null 2>&1
+    dpkg -s "\$1" 2> /dev/null | grep '^Status.*installed$' > /dev/null
 }
-if ! has_dep "python2"; then APT_DEPS="\$APT_DEPS python"; fi
-if ! has_dep "git"; then APT_DEPS="\$APT_DEPS git"; fi
-if ! has_dep "pip"; then APT_DEPS="\$APT_DEPS python-pip"; fi
+add_dep() {
+    if ! has_dep "\$1"; then APT_DEPS="\$APT_DEPS \$1"; fi
+}
+add_dep python
+add_dep git
+add_dep python-pip
+add_dep python-dev
 if test -n "\$APT_DEPS"; then
     apt-get update -yqq
     apt-get install \$APT_DEPS -yqq
 fi
 if ! has_dep "virtualenv"; then pip install --quiet virtualenv; fi
 EOF
-echo success
+echo Success!

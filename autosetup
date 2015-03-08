@@ -24,6 +24,15 @@ ensure_exists() {
     if command -v "$1" >/dev/null 2>&1; then
         return 0
     fi
+    handle_not_installed "$@"
+}
+ensure_lib_exists() {
+    if /sbin/ldconfig -p | grep "$1" > /dev/null; then
+        return 0
+    fi
+    handle_not_installed "$@"
+}
+handle_not_installed() {
     echo >&2 "We need \`$(echob -n "$1")\`, but it's not installed."
     if test -f /etc/debian_version; then
         install_with "$1" "$2"
@@ -86,6 +95,9 @@ ensure_exists pip \
 ensure_exists virtualenv \
     '`pip install virtualenv` or `aptitude install python-virtualenv` or `apt-get python-virtualenv`' \
     '`pip install virtualenv` or `pacman -S python-virtualenv`'
+ensure_lib_exists libpython2 \
+    '`aptitude install python-dev` or `apt-get install python-dev`' \
+    '`pacman -S python2`'
 if test $HAS_DEPENDENCIES -eq 0; then
     exit 1
 fi
