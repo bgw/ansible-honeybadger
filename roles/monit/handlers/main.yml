@@ -1,2 +1,7 @@
+---
 - name: reload monit
   service: name=monit state=reloaded
+  notify: wait for monit to finish reloading
+
+- name: wait for monit to finish reloading
+  pause: seconds=2
