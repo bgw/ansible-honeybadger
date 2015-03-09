@@ -309,7 +309,7 @@ def write_config(hosts, dry=False):
             if not os.path.exists("host_vars"):
                 os.makedirs("host_vars")
             with open("host_vars/%s.yml" % host, "w") as fp:
-                fp.write("---")
+                fp.write("---\n")
                 fp.write(pretty_yaml(config))
                 fp.write("\n")
 
