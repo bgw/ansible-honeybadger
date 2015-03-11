@@ -23,8 +23,21 @@
   apt: name=aptitude
   tags: bootstrap
 
-- name: remove apache2, if installed (may conflict)
-  apt: name=apache2 state=absent
+- name: remove potentially conflicting or extraneous common software
+  apt: name={{ item }} state=absent
+  with_items:
+    - apache2
+    - bind9
+    - procmail
+    - samba
+    - sasl2-bin
+    # uninstalling all this crap doesn't seem to actually stop sendmail, but
+    # that's a minor issue, because it shouldn't be able to start on reboot
+    - sendmail
+    - sendmail-base
+    - sendmail-bin
+    - sendmail-cf
+    - xinetd
   tags: bootstrap
 
 - name: update system packages (this may take a while)
