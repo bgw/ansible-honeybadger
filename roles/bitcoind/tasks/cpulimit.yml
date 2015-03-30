@@ -1,0 +1,16 @@
+---
+# Ubuntu has a cpulimit package, but it's a different version that can't do
+# process groups.
+- name: install cpulimit dependencies
+  apt: name=build-essential
+
+- name: download cpulimit
+  git: >
+    repo=https://github.com/opsengine/cpulimit.git
+    dest=/opt/cpulimit
+    version=fd48ecf5a123ddaf5dd02d7928f975db719975bb
+  register: cpulimit_clone_result
+
+- name: build cpulimit
+  command: make chdir=/opt/cpulimit
+  when: cpulimit_clone_result|changed

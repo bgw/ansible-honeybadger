@@ -1,14 +1,9 @@
 ---
-- name: add bitcoind apt repository
-  apt_repository: repo='ppa:bitcoin/bitcoin'
+- include: install.yml
   tags: bitcoind
 
-- name: install bitcoind
-  apt: name=bitcoind state=latest
-  with_items:
-    - bitcoind
-  notify:
-    - restart bitcoind
+- include: cpulimit.yml
+  when: bitcoind_cpulimit
   tags: bitcoind
 
 - name: add bitcoind user
@@ -16,27 +11,6 @@
     name=bitcoind
     system=yes
     createhome=no
-  tags: bitcoind
-
-# Ubuntu has a cpulimit package, but it's a different version that can't do
-# process groups.
-- name: install cpulimit dependencies
-  apt: name=build-essential
-  when: bitcoind_cpulimit
-  tags: bitcoind
-
-- name: download cpulimit
-  git: >
-    repo=https://github.com/opsengine/cpulimit.git
-    dest=/opt/cpulimit
-    version=fd48ecf5a123ddaf5dd02d7928f975db719975bb
-  register: cpulimit_clone_result
-  when: bitcoind_cpulimit
-  tags: bitcoind
-
-- name: build cpulimit
-  command: make chdir=/opt/cpulimit
-  when: bitcoind_cpulimit and cpulimit_clone_result|changed
   tags: bitcoind
 
 - name: configure bitcoind

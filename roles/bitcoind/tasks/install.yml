@@ -1,0 +1,84 @@
+---
+- name: uninstall bitcoind from the apt repository
+  apt: name=bitcoind state=absent
+  when: bitcoind_targz_url
+
+- name: determine if bitcoind was previously installed via tar.gz
+  stat: path=/opt/bitcoind
+  register: opt_bitcoind_result
+  when: not bitcoind_targz_url
+
+- name: uninstall bitcoind from tar.gz file
+  file: dest={{ item }} state=absent
+  with_items:
+    - /usr/bin/bitcoind
+    - /usr/bin/bitcoin-cli
+    - /opt/bitcoind
+  when: not bitcoind_targz_url and opt_bitcoind_result.stat.exists
+
+- name: add bitcoind apt repository
+  apt_repository: repo='ppa:bitcoin/bitcoin'
+  when: not bitcoind_targz_url
+
+- name: install bitcoind from the apt repository
+  apt: name=bitcoind state=latest
+  notify: [restart bitcoind]
+  when: not bitcoind_targz_url
+
+- name: create /opt/bitcoind directory
+  file: dest=/opt/bitcoind state=directory
+  when: bitcoind_targz_url
+
+- name: download bitcoind tar.gz file
+  get_url: >
+    url="{{ bitcoind_targz_url }}"
+    dest=/opt/bitcoind/release.tar.gz
+    force=yes
+  register: bitcoind_targz_download_result
+  notify: [restart bitcoind]
+  when: bitcoind_targz_url
+
+- name: delete existing bitcoind binaries
+  file: dest=/opt/bitcoind/bin state=absent
+  when: bitcoind_targz_url and bitcoind_targz_download_result|changed
+
+- name: stop existing bitcoind daemon
+  monit: name=bitcoind state=stopped
+  when: >
+    bitcoind_targz_url and
+    bitcoind_targz_safe_downgrade and
+    bitcoind_targz_download_result|changed
+
+- name: delete old data directory
+  file: dest=/var/lib/bitcoind state=absent
+  when: >
+    bitcoind_targz_url and
+    bitcoind_targz_safe_downgrade and
+    bitcoind_targz_download_result|changed
+
+- name: create /opt/bitcoind/bin directory
+  file: dest=/opt/bitcoind/bin state=directory
+  when: bitcoind_targz_url
+
+- name: extract bitcoind tar.gz file
+  unarchive: src=/opt/bitcoind/release.tar.gz dest=/opt/bitcoind/bin copy=no
+  register: bitcoind_targz_extract_result
+  when: bitcoind_targz_url
+
+- name: link files
+  shell: |
+    if test "$(uname -m)" = x86_64; then
+      ARCH=64
+    else
+      ARCH=32
+    fi
+    BIN_DIR=/opt/bitcoind/bin/bitcoin*/bin
+    if test -d $BIN_DIR/$ARCH; then
+      BIN_DIR="$BIN_DIR/$ARCH"
+    fi
+    rm -f /usr/bin/{{item|quote}}
+    ln -s $BIN_DIR/{{item|quote}} /usr/bin/{{item|quote}}
+  with_items:
+    - bitcoind
+    - bitcoin-cli
+  when: bitcoind_targz_url and bitcoind_targz_extract_result|changed

@@ -3,6 +3,14 @@
 # automatically installing on old configurations.
 bitcoind: no
 
+# you can install from a tar.gz url instead of the apt ppa, allowing you to get
+# very specific releases, at the cost of losing automatic updates.
+# eg. https://bitcoin.org/bin/0.10.0/bitcoin-0.10.0-linux32.tar.gz
+bitcoind_targz_url: no
+# delete the data directory if the tar.gz changes: requires slow re-sync, but is
+# safe when downgrading versions
+bitcoind_targz_safe_downgrade: no
+
 bitcoind_address: null
 bitcoind_port: 8333
 bitcoind_maxconnections: 125
