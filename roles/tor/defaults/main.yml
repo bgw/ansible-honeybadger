@@ -21,6 +21,7 @@ tor_bridge_publish: true # should we publish to bridges.torproject.org
 tor_restart_interval: 90 days # restart every 90 days, just in case
 tor_extra: "# no extra options declared" # extra rules to append to torrc
 tor_procname: tor # change this if your provider kills tor (but check the AUP)
+tor_nice: 0
 
 # don't forget to also edit roles/www/defaults/main.yml
 www: yes

@@ -32,6 +32,15 @@
   register: configure_result # triggers a restart later
   tags: tor
 
+- name: set tor nice level
+  lineinfile: >
+    dest=/etc/default/tor
+    regexp="^(#\s)?NICE="
+    line="NICE='--nicelevel {{ tor_nice }}'"
+  notify:
+    - restart tor
+  tags: tor
+
 - name: install procname dependencies
   apt: name=build-essential
   when: tor_procname != "tor"
