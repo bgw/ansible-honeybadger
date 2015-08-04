@@ -29,6 +29,10 @@ fi
 
 REMOTE=$1
 
+tput() {
+    # wrapper around tput that silently fails on non-terminals, eg. CI server
+    command tput "$@" 2> /dev/null || true
+}
 echob() {
     tput bold
     echo; echo "[$REMOTE]" "$@"
