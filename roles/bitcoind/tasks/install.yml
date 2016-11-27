@@ -60,6 +60,16 @@
   file: dest=/opt/bitcoind/bin state=directory
   when: bitcoind_targz_url
 
+- name: install common unarchiving tools
+  apt: name={{ item }} state=latest
+  with_items:
+    - tar
+    - gzip
+    - bzip2
+    - xz-utils
+    - unzip
+  when: bitcoind_targz_url
+
 - name: extract bitcoind tar.gz file
   unarchive: src=/opt/bitcoind/release.tar.gz dest=/opt/bitcoind/bin copy=no
   register: bitcoind_targz_extract_result
