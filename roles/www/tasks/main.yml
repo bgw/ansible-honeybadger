@@ -7,7 +7,7 @@
   register: www_tor_conflict
   failed_when: false
   changed_when: false
-  always_run: true
+  check_mode: false
   when: www
   tags: [www, tor]
 

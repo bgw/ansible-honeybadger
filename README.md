@@ -84,7 +84,7 @@ harddrive dies in a fire &mdash; just re-run Honeybadger.
 Requirements
 ------------
 
--   The target server should be running **Ubuntu 14.04 LTS**. Right now, this is
+-   The target server should be running **Ubuntu 16.04 LTS**. Right now, this is
     our only deployment target, but almost every hosting provider supports it.
 
 -   **Honeybadger assumes it's the only thing on your server**, so don't put it

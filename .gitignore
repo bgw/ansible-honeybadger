@@ -4,3 +4,5 @@ group_vars/
 secrets/
 .env/
 *.egg-info/
+*.bak
+site.retry

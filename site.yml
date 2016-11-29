@@ -1,12 +1,13 @@
 ---
 - hosts: all
   remote_user: root
-  sudo: no
+  become: no
   roles:
     # common setup (needed by both tor and bitcoind)
     - bootstrap
     - openssh
     - ufw
+    - systemd
     - monit
     - www
     # core services

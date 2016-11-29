@@ -9,7 +9,7 @@
 
 - name: add tor apt repository
   apt_repository: >
-    repo='deb http://deb.torproject.org/torproject.org trusty main'
+    repo='deb http://deb.torproject.org/torproject.org xenial main'
     update_cache=yes
   tags: tor
 
@@ -32,15 +32,6 @@
   register: configure_result # triggers a restart later
   tags: tor
 
-- name: set tor nice level
-  lineinfile: >
-    dest=/etc/default/tor
-    regexp="^(#\s)?NICE="
-    line="NICE='--nicelevel {{ tor_nice }}'"
-  notify:
-    - restart tor
-  tags: tor
-
 - name: install procname dependencies
   apt: name=build-essential
   when: tor_procname != "tor"
@@ -48,9 +39,9 @@
 
 - name: download procname
   git: >
-    repo=https://github.com/electrum/procname.git
+    repo=https://github.com/airlift/procname.git
     dest=/opt/procname
-    version=5174c7eaebb3c5add7f97a09070a6e11b72b2f3a
+    version=c75422ec5950861852570a90df56551991399d8c
   register: procname_clone_result
   when: tor_procname != "tor"
   tags: tor
@@ -60,18 +51,26 @@
   when: tor_procname != "tor" and procname_clone_result|changed
   tags: tor
 
-- name: change tor process name
-  lineinfile: >
-    dest=/etc/default/tor
-    regexp="^export {{ item.key }}="
-    line="export {{ item.key }}={{ item.value }}"
-  with_dict:
-    LD_PRELOAD: /opt/procname/libprocname.so
-    PROCNAME: "{{ tor_procname }}"
+- name: ensure /etc/systemd/system/unit.d/ exists
+  file: >
+    path=/etc/systemd/system/tor@default.service.d/
+    state=directory
+    mode=755
+    owner=root
+    group=root
+  tags: tor
+
+- name: configure systemd unit overrides
+  template: >
+    src=tor@.service.conf
+    dest=/etc/systemd/system/tor@default.service.d/honeybadger.conf
+    mode=644
+    owner=root
+    group=root
   notify:
-    - reload tor
+    - reload systemd
+    - restart tor
     - reload monit
-  when: tor_procname != "tor"
   tags: tor
 
 - name: initialize /var/lib/tor directory structure
@@ -90,7 +89,7 @@
     {{ playbook_dir }}/secrets/tor/{{ inventory_hostname }}_secret_id_key
   failed_when: false
   changed_when: false
-  always_run: true
+  check_mode: false
   register: has_backup_key_result
   tags: tor
 

@@ -16,17 +16,20 @@ script. This code links rather than shelling out to ansible. That means it must
 be licensed under the GPLv3+, and can not inlined with any other Honeybadger
 source code, or called directly (without shelling out)."""
 
-from ansible.inventory import Inventory
 import argparse
+
+from ansible.inventory import Inventory
+from ansible.parsing.dataloader import DataLoader
+from ansible.vars import VariableManager
 
 if __name__ != "__main__":
     raise Exception("'%s' may not be imported" % __name__)
 parser = argparse.ArgumentParser(description=__doc__)
 args = parser.parse_args()
 
-hosts = Inventory().get_hosts()
+hosts = Inventory(DataLoader(), VariableManager()).get_hosts()
 for h in hosts:
-    port = h.get_variables().get("ansible_ssh_port", 22)
+    port = h.get_vars().get("ansible_ssh_port", 22)
     if port != 22:
         print "%s -p %d" % (h.name, port)
     else:
