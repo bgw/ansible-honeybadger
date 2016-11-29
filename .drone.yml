@@ -1,0 +1,21 @@
+image: 'ubuntu:14.04'
+script:
+  - |
+      cat > hosts <<EOF
+      localhost ansible_connection=local
+      EOF
+  - mkdir host_vars
+  - |
+      cat > host_vars/localhost.yml <<EOF
+      ---
+      bitcoind: true
+      tor: true
+      tor_bandwidth_burst: 300 KBytes
+      tor_bandwidth_rate: 100 KBytes
+      tor_nickname: honeybadger
+      EOF
+  - sudo ./autosetup
+notify:
+  email:
+    recipients:
+      - github@benjam.info
