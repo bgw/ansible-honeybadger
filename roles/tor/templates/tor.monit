@@ -3,8 +3,8 @@
 ## submit a pull request?
 
 check process {{ tor_procname }} with pidfile /var/run/tor/tor.pid
-    start program = "/usr/sbin/service tor start"
-    stop program = "/usr/sbin/service tor stop"
+    start program = "/usr/sbin/service tor@default start"
+    stop program = "/usr/sbin/service tor@default stop"
 
     {% if www and www_port == tor_dir_port %}
     if failed host localhost port {{tor_proxied_dir_port}} type tcp then restart

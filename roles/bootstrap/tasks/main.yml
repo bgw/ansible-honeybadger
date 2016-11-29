@@ -1,8 +1,8 @@
 ---
-- name: test we're on ubuntu 14.04 lts
+- name: test we're on ubuntu 16.04 lts
   pause: seconds=0
   failed_when: >
-    ansible_distribution != "Ubuntu" or ansible_distribution_release != "trusty"
+    ansible_distribution != "Ubuntu" or ansible_distribution_release != "xenial"
   tags: bootstrap
 
 - name: test that at least one service is enabled

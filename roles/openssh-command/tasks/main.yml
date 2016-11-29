@@ -29,7 +29,7 @@
   register: result
   changed_when: false
   failed_when: false
-  always_run: true
+  check_mode: false
   tags: openssh-command
 
 - name: copy root's authorized_keys file

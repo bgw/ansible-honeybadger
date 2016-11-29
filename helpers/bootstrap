@@ -50,7 +50,7 @@ else
     SSH_CMD="ssh root@$REMOTE"
 
     echob "Copying ssh key (if needed)"
-    helpers/ssh-copy-id root@$REMOTE
+    helpers/ssh-copy-id -o ControlPath=none root@$REMOTE
 fi
 
 echob "Reconfiguring apt keyring"
@@ -78,6 +78,6 @@ if test -n "\$APT_DEPS"; then
     apt-get update -yqq
     apt-get install \$APT_DEPS -yqq
 fi
-if ! has_dep "virtualenv"; then pip install --quiet virtualenv; fi
+if ! has_dep "virtualenv"; then LC_ALL=C pip install --quiet virtualenv; fi
 EOF
 echo Success!

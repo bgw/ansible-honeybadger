@@ -20,10 +20,14 @@ bitcoind_extra: "# no extra options declared"
 bitcoind_rpc_port: 8332
 bitcoind_rpc_user: bitcoinrpc
 bitcoind_rpc_password: this_is_localhost_only_so_it_doesnt_really_matter
-# upstart/monit options
+# systemd/monit options
 bitcoind_restart_interval: 90 days
 bitcoind_nice: 0
+# can use cgroups or cpulimit to limit cpu usage. Using cgroups isn't currently
+# recommended here because it's not well tested yet, and it requires kernel
+# support, which may not work on every host (especially OpenVZ containers).
 bitcoind_cpulimit: no # percent from 0 to 100*num_cpus
+bitcoind_cgroups_cpulimit: no # (boolean) use cgroups instead of cpulimit
 # caution: ionice will probably cause OVZ to fail
 bitcoind_ionice: no
 bitcoind_ionice_class: 3

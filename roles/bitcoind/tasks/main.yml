@@ -33,23 +33,15 @@
     state=directory
   tags: bitcoind
 
-- name: install bitcoind upstart script
+- name: install bitcoind systemd script
   template: >
-    src=upstart.conf
-    dest=/etc/init/bitcoind.conf
+    src=bitcoind.service
+    dest=/etc/systemd/system/bitcoind.service
     mode=644
     owner=root
     group=root
   notify:
-    - restart bitcoind
-  tags: bitcoind
-
-# old versions of honeybadger might leave this behind (March 6th, 2015)
-- name: remove old bitcoind upstart override file
-  file: >
-    dest=/etc/init/bitcoind.override
-    state=absent
-  notify:
+    - reload systemd
     - restart bitcoind
   tags: bitcoind
 
